@@ -1,36 +1,43 @@
-const express=require('express');
-const mongoose=require('mongoose');
+import express from 'express'
+import cookieParser from 'cookie-parser';
+import cors from 'cors'
+import dotenv from 'dotenv'
+import {errorMiddleware} from './src/middleware/error.middleware.js'
+import {connection} from './src/config/db.js'
+dotenv.config()
 const app=express();
-const cookieparser=require('cookie-parser');//to read the cookie send by the browser.
-const cors=require('cors');
-require("dotenv").config();
-const {Errorhandler,errorMiddleware}=require('./middleware/error');  
 
-app.use(cors({
+
+app.use(cors({ 
     origin:[process.env.FRONTEND_URL],
     methods:["GET","PUT","PATCH","DELETE","POST"],
     credentials:true,
 }));
-app.use(express.json()); //to convert the json message into javascript objects.
-app.use(express.urlencoded({extended:true}));//to parse the form data.
+app.use(express.json()) //to convert the json message into javascript objects.
+app.use(express.urlencoded({extended:true}))//to parse the form data.
+app.use(cookieParser())
 
 app.use((req,res,next)=>{
-    console.log("URL:",req.url + "Method:",req.method);
+    console.log("URL:",req.url + "Method:",req.method)
     next();
 })
 
 app.get("/",(req,res)=>{
     res.send("hello i am building the authentication and authorization")
 })
-mongoose.connect(process.env.MONGO_DB)
-.then(()=>{ 
-    console.log("Database connect successfully");
+ 
+
+//database connection
+  connection()
+  .then(()=>{
+    console.log('Database connected successfully')
     const PORT=process.env.PORT||3000;
     app.listen(PORT,()=>{
-        console.log(`The server is running at the port:${PORT}`);
+        console.log(`The server is running at the port:${PORT}`)
     })
-})
+  })
 .catch((error)=>{
-    console.log("Error occured:",error);
+    console.log("Error occured:",error)
 })
-app.use(errorMiddleware);
+//app.use(Errorhandler);
+app.use(errorMiddleware)
