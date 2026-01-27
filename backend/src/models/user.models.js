@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 const userSchema=new mongoose.Schema({
-      fullName:{
+      name:{
         type:String,
         required:true
       },
@@ -13,12 +13,12 @@ const userSchema=new mongoose.Schema({
         type:String,
         required:true,
         minlength:[8,"Password must be 8 character long."],
-        maxlength:[32,"Password must not exceed 32 character long."]
+       // maxlength:[32,"Password must not exceed 32 character long."]
     },
     phone:{
         type:String,
         required:true,
-        maxLength:[10,"Phone number must be of 10 character"]
+        //maxLength:[10,"Phone number must be of 10 character"]
     },
     accountVerified:{
          type:Boolean,

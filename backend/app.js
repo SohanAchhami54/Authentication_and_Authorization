@@ -4,6 +4,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import {errorMiddleware} from './src/middleware/error.middleware.js'
 import {connection} from './src/config/db.js'
+import authRouter from './src/routes/auth/index.js'
 dotenv.config()
 const app=express();
 
@@ -25,8 +26,6 @@ app.use((req,res,next)=>{
 app.get("/",(req,res)=>{
     res.send("hello i am building the authentication and authorization")
 })
- 
-
 //database connection
   connection()
   .then(()=>{
@@ -39,5 +38,11 @@ app.get("/",(req,res)=>{
 .catch((error)=>{
     console.log("Error occured:",error)
 })
+
+app.use('/auth',authRouter)
+
+
+
+
 //app.use(Errorhandler);
 app.use(errorMiddleware)
