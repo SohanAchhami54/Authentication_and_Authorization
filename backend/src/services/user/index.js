@@ -19,6 +19,8 @@ const getUserByEmailOrNumber=async(email,phone)=>{
    return user 
 }
 
+
+
 const createUser=async(userData)=>{
 const user=await User.create({...userData,password: await encryptedPassword(userData.password)})
 return user 
@@ -34,6 +36,16 @@ const generateVerificationCode=()=>{
   const verificationCodeExpire=new Date(Date.now()+5*60*1000)
   
   return {verificationCode,verificationCodeExpire}
+}
+
+const signupAttempt=async(email,phone)=>{
+  const user=await User.find({
+    $or:[
+      {phone,accountVerified:false},
+      {email,accountVerified:false}
+    ]
+  })
+  return user
 }
 
 const sendVerificationCode=async(verificationCode,verificationMethod,email,phone,name)=>{
@@ -91,6 +103,6 @@ function generateEmailTemplate(verificationCode,name){
 }
 
 
-export {validateNumber,getUserByEmailOrNumber,createUser,generateVerificationCode,sendVerificationCode}
+export {validateNumber,getUserByEmailOrNumber,createUser,generateVerificationCode,sendVerificationCode,signupAttempt}
 
 

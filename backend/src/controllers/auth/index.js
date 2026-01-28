@@ -1,5 +1,5 @@
 import { Errorhandler } from "../../middleware/error.middleware.js"
-import {createUser, generateVerificationCode, getUserByEmailOrNumber, sendVerificationCode, validateNumber } from "../../services/user/index.js"
+import {createUser, generateVerificationCode, getUserByEmailOrNumber, sendVerificationCode, signupAttempt, validateNumber } from "../../services/user/index.js"
 
 import { AsyncError } from "../../utils/catchAsyncError.js" 
 
@@ -23,6 +23,13 @@ const SignUp=AsyncError(async (req,res,next)=>{
    const existingUser=await getUserByEmailOrNumber(email,phone)
    if(existingUser) return next(new Errorhandler('User with this email and phone already exists',400))
 
+
+    const signupAttemptByUser=await signupAttempt(email,validNumber)
+    if(signupAttemptByUser.length>=3){
+        return next(new Errorhandler('You have exceed maximum number of attempts(3).Please try again after 1 hour',400))
+    }
+ 
+ 
     const user=await createUser({name,email,phone:validNumber,password})
     
     //verificationCode 
@@ -37,5 +44,14 @@ const SignUp=AsyncError(async (req,res,next)=>{
 
    // return res.status(200).json({success:true,message:'User Signed In',data:user})
 })
+
+
+
+
+
+
+
+
+
 export {SignUp}
 
