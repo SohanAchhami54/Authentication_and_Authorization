@@ -1,5 +1,6 @@
 import { User } from "../../models/user.models.js"
-import { encryptedPassword, sendEmail } from "../../utils/auth.js"
+import { encryptedPassword, getTwilioClient, sendEmail } from "../../utils/auth.js"
+import { Errorhandler } from "../../middleware/error.middleware.js"
 
 const validateNumber = (phone) => {
   const phoneRegex = /^(97|98)\d{8}$/   
@@ -35,19 +36,32 @@ const generateVerificationCode=()=>{
   return {verificationCode,verificationCodeExpire}
 }
 
-const sendVerificationCode=async(verificationCode,verificationMethod,email,phone)=>{
+const sendVerificationCode=async(verificationCode,verificationMethod,email,phone,name)=>{
 
       if(verificationMethod==='email'){
-        const message=generateEmailTemplate(verificationCode)
+        const message=generateEmailTemplate(verificationCode,name)
         sendEmail({email,subject:'Your Verification Code:',message})
+        //res.status(200).json({success:true,message:`Verification email Successfully send to ${name}`})
+        return `Verification code sent to ${name}`
+
         
       }else if(verificationMethod==='phone'){
-         const codeWithSpace=verificationCode.toString().toSplit("").join(" ")//35363 become 3 5 3 6 3 
+         const client=getTwilioClient()
+         const codeWithSpace=verificationCode.toString().split("").join(" ")//35363 become 3 5 3 6 3 
+         await client.calls.create({
+          twiml:`<Response> <Say>Your Verification code is ${codeWithSpace}. Your Verification code is ${codeWithSpace}</Say> </Response> `,
+          from:process.env.TWILIO_PHONE_NUMBER,
+          to:phone
+         })
+         return `OTP code sent. `
+      //  res.status(200).json({success:true,message:'OTP code sent. '})
+  }else {
+    throw new Errorhandler('Invalid verification method',400)
+  }
+  
+} 
 
-      }
-}
-
-function generateEmailTemplate(verificationCode){
+function generateEmailTemplate(verificationCode,name){
     return ` 
 
      <h2>Hello ${name},</h2>

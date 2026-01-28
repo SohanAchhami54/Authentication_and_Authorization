@@ -39,7 +39,7 @@ app.get("/",(req,res)=>{
     console.log("Error occured:",error)
 })
 
-app.use('/auth',authRouter)
+app.use('/api/auth',authRouter)
 
 
 

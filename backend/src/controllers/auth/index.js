@@ -4,10 +4,15 @@ import {createUser, generateVerificationCode, getUserByEmailOrNumber, sendVerifi
 import { AsyncError } from "../../utils/catchAsyncError.js" 
 
 const SignUp=AsyncError(async (req,res,next)=>{
-    try{
     const {name,email,phone,password,verificationMethod}=req.body 
+
+   
     if(!name || !email || !phone || !password || !verificationMethod) {
         return next(new Errorhandler('All Fields are required',400))
+    }
+
+     if (!['email','phone'].includes(verificationMethod)) {
+       return next(new Errorhandler('Invalid verification Method.', 400))
     }
     
     const validNumber=validateNumber(phone) 
@@ -26,13 +31,11 @@ const SignUp=AsyncError(async (req,res,next)=>{
     user.verificationCodeExpire=verificationCodeExpire
     await user.save()
    
-    //send the verificationCode 
-    sendVerificationCode(verificationCode,verificationMethod,email,phone,name)
+    //send the verificationCode or call service 
+   const message=await sendVerificationCode(verificationCode,verificationMethod,email,validNumber,name)
+   res.status(200).json({sucess:true,message,data:{userId:user._id,email:user.email,phone:user.phone}})
 
-    return res.status(200).json({success:true,message:'User Signed In',data:user})
-}catch(error){
-    next(error)
-}
+   // return res.status(200).json({success:true,message:'User Signed In',data:user})
 })
 export {SignUp}
 
