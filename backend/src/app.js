@@ -2,9 +2,9 @@ import express from 'express'
 import cookieParser from 'cookie-parser';
 import cors from 'cors'
 import dotenv from 'dotenv'
-import {errorMiddleware} from './src/middleware/error.middleware.js'
-import {connection} from './src/config/db.js'
-import authRouter from './src/routes/auth/index.js'
+import {errorMiddleware} from './middleware/error.middleware.js'
+import {connection} from './config/db.js'
+import authRouter from './routes/auth/index.js'
 dotenv.config()
 const app=express();
 
