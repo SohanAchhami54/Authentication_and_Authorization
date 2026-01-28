@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import nodemailer from 'nodemailer'
 import twilio from 'twilio'
+import jwt from 'jsonwebtoken'
 const encryptedPassword=async(password)=>{
   const salt=await bcrypt.genSalt(10)
   const hashPassword=await bcrypt.hash(password,salt)
@@ -25,6 +26,22 @@ const sendEmail=async(emailData)=>{
   }
    await transporter.sendMail(options)
 }
+
+const generateJWTToken=async(user)=>{
+  const token=jwt.sign(
+    {
+      id:user._id
+    },
+    process.env.JWT_SECRET_KEY,
+    {
+      expiresIn:process.env.JWT_EXPIRE || '1d'
+    }
+  )
+  return token
+}
+
+
+
 const getTwilioClient=()=>{
    if (!process.env.TWILIO_SID || !process.env.TWILIO_TOKEN) {
     throw new Error('Twilio credentials are missing')
@@ -32,4 +49,4 @@ const getTwilioClient=()=>{
   return twilio(process.env.TWILIO_SID,process.env.TWILIO_TOKEN)
 }
 
-export {encryptedPassword,sendEmail,getTwilioClient}
+export {encryptedPassword,sendEmail,getTwilioClient,generateJWTToken}

@@ -48,6 +48,26 @@ const signupAttempt=async(email,phone)=>{
   return user
 }
 
+const allUserEntries=async(email,phone)=>{
+  const user=await User.find({
+    $or:[
+      {email,accountVerified:false},
+      {phone,accountVerified:false},
+    ]
+  }).sort({createdAt:-1})
+  return user
+}
+
+const deleteDuplicateUser=async(user,email,phone)=>{
+    await User.deleteMany({
+       _id:{$ne:user._id}, //ne = not equal 
+       $or:[
+        {phone,accountVerified:false},
+        {email,accountVerified:false}
+       ]
+     })
+}
+
 const sendVerificationCode=async(verificationCode,verificationMethod,email,phone,name)=>{
 
       if(verificationMethod==='email'){
@@ -103,6 +123,6 @@ function generateEmailTemplate(verificationCode,name){
 }
 
 
-export {validateNumber,getUserByEmailOrNumber,createUser,generateVerificationCode,sendVerificationCode,signupAttempt}
+export {validateNumber,getUserByEmailOrNumber,createUser,generateVerificationCode,sendVerificationCode,signupAttempt,deleteDuplicateUser,allUserEntries}
 
 

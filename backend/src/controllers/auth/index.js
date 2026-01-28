@@ -1,5 +1,5 @@
 import { Errorhandler } from "../../middleware/error.middleware.js"
-import {createUser, generateVerificationCode, getUserByEmailOrNumber, sendVerificationCode, signupAttempt, validateNumber } from "../../services/user/index.js"
+import {allUserEntries, createUser, deleteDuplicateUser, generateVerificationCode, getUserByEmailOrNumber, sendVerificationCode, signupAttempt, validateNumber } from "../../services/user/index.js"
 
 import { AsyncError } from "../../utils/catchAsyncError.js" 
 
@@ -46,12 +46,33 @@ const SignUp=AsyncError(async (req,res,next)=>{
 })
 
 
+const verifyOTP=AsyncError(async(req,res,next)=>{
+   const {email,otp,phone}=req.body 
 
+   const validNumber=validateNumber(phone) 
+    if(!validNumber)  return next(new Errorhandler('Number should be of 10 digits',400))
+     
+      const userEntries=await allUserEntries(email,phone)
+      if(!userEntries) return next(new Errorhandler('User not found'))
+      let user
+      if(userEntries.length>1) {
+         user=userEntries[0]
+         await deleteDuplicateUser(user,email,phone)
+      }else{
+        user=userEntries[0]
+      }
+     if(user.verificationCode!==Number(otp)) return next(new Errorhandler('Invalid OTP',400))
 
+     const currentTime=new Date()
+     const codeExpiredTime=user.verificationCodeExpire
+     if(currentTime>codeExpiredTime)  return next(new Errorhandler('OTP Code Expired',400))
+     
+     user.accountVerified=true 
+     user.verificationCode=null 
+     user.verificationCodeExpire=null
+     await user.save({validateModifiedOnly:true})
+     res.status(200).json({success:true,message:'OTP verified Please login.'})
 
-
-
-
-
-export {SignUp}
+})
+export {SignUp,verifyOTP}
 
