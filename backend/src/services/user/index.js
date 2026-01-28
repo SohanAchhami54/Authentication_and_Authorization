@@ -73,20 +73,18 @@ const sendVerificationCode=async(verificationCode,verificationMethod,email,phone
       if(verificationMethod==='email'){
         const message=generateEmailTemplate(verificationCode,name)
         sendEmail({email,subject:'Your Verification Code:',message})
-        //res.status(200).json({success:true,message:`Verification email Successfully send to ${name}`})
         return `Verification code sent to ${name}`
 
         
       }else if(verificationMethod==='phone'){
          const client=getTwilioClient()
-         const codeWithSpace=verificationCode.toString().split("").join(" ")//35363 become 3 5 3 6 3 
-         await client.calls.create({
-          twiml:`<Response> <Say>Your Verification code is ${codeWithSpace}. Your Verification code is ${codeWithSpace}</Say> </Response> `,
+         const codeWithSpace=verificationCode
+         await client.messages.create({
+          body:`Hello ${name}, Your OTP Code is ${codeWithSpace}. Valid for 5 minutes Thank You`,
           from:process.env.TWILIO_PHONE_NUMBER,
           to:phone
          })
          return `OTP code sent. `
-      //  res.status(200).json({success:true,message:'OTP code sent. '})
   }else {
     throw new Errorhandler('Invalid verification method',400)
   }
