@@ -53,6 +53,8 @@ const verifyOTP=AsyncError(async(req,res,next)=>{
      
       const userEntries=await allUserEntries(email,phone)
       if(!userEntries) return next(new Errorhandler('User not found'))
+      if(userEntries.length===0) return next(new Errorhandler('User already verified or not found.',400))
+        
       let user
       if(userEntries.length>1) {
          user=userEntries[0]
@@ -98,20 +100,16 @@ const SignIn=AsyncError(async(req,res,next)=>{
 })
 
 
-const LogOut=AsyncError(async(req,res,next)=>{
+const LogOut=AsyncError(async(req,res)=>{
     res.cookie('token','',{
         httpOnly:true,
         secure:false,
         sameSite:'strict',
         maxAge:new Date(0)
     })
-    res.status(200).json({success:true,message:'User Logged Out'})
+    res.status(200).json({success:true,message:'User Logged Out Successfully.'})
 })
 
-
-
-
 export {SignUp,verifyOTP,SignIn,LogOut}
-
 
 
