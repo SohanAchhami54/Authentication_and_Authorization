@@ -101,14 +101,20 @@ const SignIn=AsyncError(async(req,res,next)=>{
 
 
 const LogOut=AsyncError(async(req,res)=>{
-    res.cookie('token','',{
+    res.clearCookie('token',{
         httpOnly:true,
         secure:false,
         sameSite:'strict',
-        maxAge:new Date(0)
     })
     res.status(200).json({success:true,message:'User Logged Out Successfully.'})
 })
+
+
+
+
+
+
+
 
 export {SignUp,verifyOTP,SignIn,LogOut}
 
