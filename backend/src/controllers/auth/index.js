@@ -81,7 +81,7 @@ const SignIn=AsyncError(async(req,res,next)=>{
     if(!email && !phone) return next(new Errorhandler('Email or phone is required',400))
     
     const user=await getUserByEmailOrNumber(email,phone)
-    if(!user) return next(new Errorhandler('User not found',400))
+    if(!user) return next(new Errorhandler('User not found.',400))
     
     const passwordMatched=await verifyPassword(password,user.password)
     if(!passwordMatched) return next(new Errorhandler('Password doesnot match',400))
@@ -98,10 +98,20 @@ const SignIn=AsyncError(async(req,res,next)=>{
 })
 
 
+const LogOut=AsyncError(async(req,res,next)=>{
+    res.cookie('token','',{
+        httpOnly:true,
+        secure:false,
+        sameSite:'strict',
+        maxAge:new Date(0)
+    })
+    res.status(200).json({success:true,message:'User Logged Out'})
+})
 
 
 
-export {SignUp,verifyOTP,SignIn}
+
+export {SignUp,verifyOTP,SignIn,LogOut}
 
 
 
