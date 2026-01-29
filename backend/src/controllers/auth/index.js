@@ -1,5 +1,6 @@
 import { Errorhandler } from "../../middleware/error.middleware.js"
 import {allUserEntries, createUser, deleteDuplicateUser, generateVerificationCode, getUserByEmailOrNumber, sendVerificationCode, signupAttempt, validateNumber } from "../../services/user/index.js"
+import { generateJWTToken, verifyPassword } from "../../utils/auth.js"
 
 import { AsyncError } from "../../utils/catchAsyncError.js" 
 
@@ -38,11 +39,9 @@ const SignUp=AsyncError(async (req,res,next)=>{
     user.verificationCodeExpire=verificationCodeExpire
     await user.save()
    
-    //send the verificationCode or call service 
+    //send the verificationCode via SMS
    const message=await sendVerificationCode(verificationCode,verificationMethod,email,validNumber,name)
    res.status(200).json({sucess:true,message,data:{userId:user._id,email:user.email,phone:user.phone}})
-
-   // return res.status(200).json({success:true,message:'User Signed In',data:user})
 })
 
 
@@ -74,5 +73,35 @@ const verifyOTP=AsyncError(async(req,res,next)=>{
      res.status(200).json({success:true,message:'OTP verified Please login.'})
 
 })
-export {SignUp,verifyOTP}
+
+const SignIn=AsyncError(async(req,res,next)=>{
+    const {email,phone,password}=req.body 
+    if(!password) return next(new Errorhandler('Password must be required',400))
+    
+    if(!email && !phone) return next(new Errorhandler('Email or phone is required',400))
+    
+    const user=await getUserByEmailOrNumber(email,phone)
+    if(!user) return next(new Errorhandler('User not found',400))
+    
+    const passwordMatched=await verifyPassword(password,user.password)
+    if(!passwordMatched) return next(new Errorhandler('Password doesnot match',400))
+
+    const jwtToken=generateJWTToken(user)
+    res.cookie('token',jwtToken,{
+        httpOnly:true, 
+        secure:false, //http can also access this 
+        sameSite:'strict', 
+        maxAge:24*60*60*1000
+    })
+  
+    res.status(200).json({success:true,message:'User logged in',data:{id:user._id,name:user.name,email:user.email,phone:user.phone}})
+})
+
+
+
+
+
+export {SignUp,verifyOTP,SignIn}
+
+
 
