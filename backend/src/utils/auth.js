@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs'
 import nodemailer from 'nodemailer'
 import twilio from 'twilio'
 import jwt from 'jsonwebtoken'
+import { User } from '../models/user.models.js'
 
 const encryptedPassword=async(password)=>{
   const salt=await bcrypt.genSalt(10)
@@ -33,6 +34,10 @@ const verifyPassword=async(userPassword,encryptedPassword)=>{
    return await bcrypt.compare(userPassword,encryptedPassword)
 }
 
+const verifyToken=(token)=>{
+  return jwt.verify(token,process.env.JWT_SECRET_KEY)
+}
+
 const generateJWTToken=(user)=>{
   const token= jwt.sign(
     {
@@ -46,6 +51,10 @@ const generateJWTToken=(user)=>{
   return token
 }
 
+const findUser=async(decodedId)=>{
+  return await User.findOne({_id:decodedId})
+}
+
 
 
 const getTwilioClient=()=>{
@@ -55,4 +64,4 @@ const getTwilioClient=()=>{
   return twilio(process.env.TWILIO_SID,process.env.TWILIO_TOKEN)
 }
 
-export {encryptedPassword,sendEmail,getTwilioClient,generateJWTToken,verifyPassword}
+export {encryptedPassword,sendEmail,getTwilioClient,generateJWTToken,verifyPassword,verifyToken,findUser}
