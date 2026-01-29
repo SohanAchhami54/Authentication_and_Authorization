@@ -1,6 +1,6 @@
 import { Errorhandler } from "../../middleware/error.middleware.js"
-import {allUserEntries, createUser, deleteDuplicateUser, generateVerificationCode, getUserByEmailOrNumber, sendVerificationCode, signupAttempt, validateNumber } from "../../services/user/index.js"
-import { generateJWTToken, verifyPassword } from "../../utils/auth.js"
+import {allUserEntries, createUser, deleteDuplicateUser, forgetPassToken, generateVerificationCode, getUserByEmailOrNumber, sendVerificationCode, signupAttempt, validateNumber } from "../../services/user/index.js"
+import { findUserforgetPass, generateJWTToken, verifyPassword } from "../../utils/auth.js"
 
 import { AsyncError } from "../../utils/catchAsyncError.js" 
 
@@ -78,11 +78,16 @@ const verifyOTP=AsyncError(async(req,res,next)=>{
 
 const SignIn=AsyncError(async(req,res,next)=>{
     const {email,phone,password}=req.body 
+
+    const validNumber=validateNumber(phone)
+
+    if(!validNumber) return next(new Errorhandler('Enter Valid Number Starting with +977',400))
+
     if(!password) return next(new Errorhandler('Password must be required',400))
     
-    if(!email && !phone) return next(new Errorhandler('Email or phone is required',400))
+    if(!email && !validNumber) return next(new Errorhandler('Email or phone is required',400))
     
-    const user=await getUserByEmailOrNumber(email,phone)
+    const user=await getUserByEmailOrNumber(email,validNumber)
     if(!user) return next(new Errorhandler('User not found.',400))
     
     const passwordMatched=await verifyPassword(password,user.password)
@@ -93,7 +98,7 @@ const SignIn=AsyncError(async(req,res,next)=>{
         httpOnly:true, 
         secure:false, //http can also access this 
         sameSite:'strict', 
-        maxAge:24*60*60*1000
+        maxAge:24*60*60*1000,
     })
   
     res.status(200).json({success:true,message:'User logged in',data:{id:user._id,name:user.name,email:user.email,phone:user.phone}})
@@ -110,12 +115,32 @@ const LogOut=AsyncError(async(req,res)=>{
 })
 
 
+const getUser=AsyncError(async(req,res,next)=>{
+   const user=req.user 
+   res.status(200).json({success:true,message:'User Data',user})
+})
+
+
+const forgotPassword=AsyncError(async(req,res,next)=>{
+    const user =await findUserforgetPass({email:req.body.email,accountverified:true})
+    if(!user) return next(new Errorhandler('User not found.',404))
+    
+    const {passtoken,tokenexpire} =forgetPassToken()
+    user.resetPasswordToken=passtoken 
+    user.resetPasswordExpire=tokenexpire
+    await user.save() 
+
+    
+
+})
 
 
 
 
 
 
-export {SignUp,verifyOTP,SignIn,LogOut}
+
+
+export {SignUp,verifyOTP,SignIn,LogOut,getUser}
 
 

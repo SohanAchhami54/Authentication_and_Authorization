@@ -55,6 +55,12 @@ const findUser=async(decodedId)=>{
   return await User.findOne({_id:decodedId})
 }
 
+const findUserforgetPass=async(query)=>{
+   return await User.findOne(query)
+}
+
+
+
 
 
 const getTwilioClient=()=>{
@@ -64,4 +70,4 @@ const getTwilioClient=()=>{
   return twilio(process.env.TWILIO_SID,process.env.TWILIO_TOKEN)
 }
 
-export {encryptedPassword,sendEmail,getTwilioClient,generateJWTToken,verifyPassword,verifyToken,findUser}
+export {encryptedPassword,sendEmail,getTwilioClient,generateJWTToken,verifyPassword,verifyToken,findUser,findUserforgetPass}

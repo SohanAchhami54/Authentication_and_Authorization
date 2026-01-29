@@ -12,7 +12,7 @@ const isProtected=AsyncError(async(req,res,next)=>{
     
     const userData=await findUser(decoded.id)
     console.log('userdata is:',userData)
-    res.user=userData
+    req.user=userData
     next()
 })
 

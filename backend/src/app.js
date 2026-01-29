@@ -40,9 +40,4 @@ app.get("/",(req,res)=>{
 })
 
 app.use('/api/auth',authRouter)
-
-
-
-
-//app.use(Errorhandler);
 app.use(errorMiddleware)

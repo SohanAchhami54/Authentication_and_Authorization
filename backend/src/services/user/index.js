@@ -1,7 +1,7 @@
 import { User } from "../../models/user.models.js"
 import { encryptedPassword, getTwilioClient, sendEmail } from "../../utils/auth.js"
 import { Errorhandler } from "../../middleware/error.middleware.js"
-
+import crypto from 'crypto'
 const validateNumber = (phone) => {
   const phoneRegex = /^(97|98)\d{8}$/   
   if (!phoneRegex.test(phone)) {
@@ -25,6 +25,7 @@ const createUser=async(userData)=>{
 const user=await User.create({...userData,password: await encryptedPassword(userData.password)})
 return user 
 }
+
 
 
 const generateVerificationCode=()=>{
@@ -67,6 +68,17 @@ const deleteDuplicateUser=async(user,email,phone)=>{
        ]
      })
 }
+
+const  forgetPassToken=()=>{
+
+  const randomhex=crypto.randomBytes(20).toString('hex')
+  const passtoken= crypto.createHash('sha256').update(randomhex).digest('hex')
+
+  const tokenexpire=new Date(Date.now()+5*60*1000)
+  return {passtoken,tokenexpire}
+}
+
+
 
 const sendVerificationCode=async(verificationCode,verificationMethod,email,phone,name)=>{
 
@@ -121,6 +133,6 @@ function generateEmailTemplate(verificationCode,name){
 }
 
 
-export {validateNumber,getUserByEmailOrNumber,createUser,generateVerificationCode,sendVerificationCode,signupAttempt,deleteDuplicateUser,allUserEntries}
+export {validateNumber,getUserByEmailOrNumber,createUser,generateVerificationCode,sendVerificationCode,signupAttempt,deleteDuplicateUser,allUserEntries,forgetPassToken}
 
 
