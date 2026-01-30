@@ -1,6 +1,6 @@
 import { Errorhandler } from "../../middleware/error.middleware.js"
 import {allUserEntries, createUser, deleteDuplicateUser, forgetPassToken, generateVerificationCode, getUserByEmailOrNumber, sendVerificationCode, signupAttempt, validateNumber } from "../../services/user/index.js"
-import { findUserforgetPass, generateJWTToken, verifyPassword } from "../../utils/auth.js"
+import { findUserforgetPass, generateJWTToken, sendEmail, verifyPassword } from "../../utils/auth.js"
 
 import { AsyncError } from "../../utils/catchAsyncError.js" 
 
@@ -126,21 +126,29 @@ const forgotPassword=AsyncError(async(req,res,next)=>{
     if(!user) return next(new Errorhandler('User not found.',404))
     
     const {passtoken,tokenexpire} =forgetPassToken()
+    
     user.resetPasswordToken=passtoken 
     user.resetPasswordExpire=tokenexpire
-    await user.save() 
+    await user.save({validateBeforeSave:false}) // do not check everything.
 
-    
+    const resetPasswordUrl=`${process.env.FRONTEND_URL}/reset/password/${passtoken}`
+    const message = `You requested to reset your password.
 
+     Please click the link below to set a new password:
+    ${resetPasswordUrl}
+    If you did not request a password reset, please ignore this email.`
+
+    try{
+      await sendEmail({email:user.email,subject:'Password Reset Request',message})
+    }catch(error){
+        user.resetPasswordToken=undefined
+        user.resetPasswordExpire=undefined
+        await user.save({validateBeforeSave:false})
+        return next(new Errorhandler(error.message?error.message:'Email could not be Sent.',500))
+    }
+
+    res.status(200).json({success:true,message:`Email send to ${user.email} successfully.`})
 })
-
-
-
-
-
-
-
-
 export {SignUp,verifyOTP,SignIn,LogOut,getUser}
 
 

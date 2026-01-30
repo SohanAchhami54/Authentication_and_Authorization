@@ -84,7 +84,7 @@ const sendVerificationCode=async(verificationCode,verificationMethod,email,phone
 
       if(verificationMethod==='email'){
         const message=generateEmailTemplate(verificationCode,name)
-        sendEmail({email,subject:'Your Verification Code:',message})
+        await sendEmail({email,subject:'Your Verification Code:',message})
         return `Verification code sent to ${name}`
 
         
