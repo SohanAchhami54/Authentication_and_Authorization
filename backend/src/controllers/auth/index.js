@@ -119,10 +119,10 @@ const getUser=AsyncError(async(req,res,next)=>{
    const user=req.user 
    res.status(200).json({success:true,message:'User Data',user})
 })
-
+ 
 
 const forgotPassword=AsyncError(async(req,res,next)=>{
-    const user =await findUserforgetPass({email:req.body.email,accountverified:true})
+    const user =await findUserforgetPass({email:req.body.email,accountVerified:true})
     if(!user) return next(new Errorhandler('User not found.',404))
     
     const {passtoken,tokenexpire} =forgetPassToken()
@@ -142,13 +142,18 @@ const forgotPassword=AsyncError(async(req,res,next)=>{
       await sendEmail({email:user.email,subject:'Password Reset Request',message})
     }catch(error){
         user.resetPasswordToken=undefined
-        user.resetPasswordExpire=undefined
+        user.resetPasswordExpire=undefined 
         await user.save({validateBeforeSave:false})
         return next(new Errorhandler(error.message?error.message:'Email could not be Sent.',500))
     }
 
     res.status(200).json({success:true,message:`Email send to ${user.email} successfully.`})
 })
-export {SignUp,verifyOTP,SignIn,LogOut,getUser}
+
+
+
+
+
+export {SignUp,verifyOTP,SignIn,LogOut,getUser,forgotPassword}
 
 

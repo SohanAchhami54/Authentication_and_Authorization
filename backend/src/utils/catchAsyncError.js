@@ -3,4 +3,4 @@ const AsyncError=(theFunction)=>{
         Promise.resolve(theFunction(req,res,next)).catch(next)
     }
 }
-export {AsyncError}
+export {AsyncError} 
