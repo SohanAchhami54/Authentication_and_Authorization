@@ -10,7 +10,7 @@ const app=express();
 
 
 app.use(cors({ 
-    origin:[process.env.FRONTEND_URL],
+    origin:[process.env.FRONTEND_URL || true],
     methods:["GET","PUT","PATCH","DELETE","POST"],
     credentials:true,
 }));
@@ -26,6 +26,7 @@ app.use((req,res,next)=>{
 app.get("/",(req,res)=>{
     res.send("hello i am building the authentication and authorization")
 })
+
 //database connection
   connection()
   .then(()=>{

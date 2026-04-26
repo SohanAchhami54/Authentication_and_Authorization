@@ -1,5 +1,6 @@
 import { Errorhandler } from "../../middleware/error.middleware.js"
-import {allUserEntries, createUser, deleteDuplicateUser, forgetPassToken, generateVerificationCode, getUserByEmailOrNumber, sendVerificationCode, signupAttempt, validateNumber } from "../../services/user/index.js"
+import { User } from "../../models/user.models.js"
+import {allUserEntries, createUser, deleteDuplicateUser, findUserByToken, forgetPassToken, generateVerificationCode, getUserByEmailOrNumber, sendVerificationCode, signupAttempt, tokenReset, validateNumber } from "../../services/user/index.js"
 import { findUserforgetPass, generateJWTToken, sendEmail, verifyPassword } from "../../utils/auth.js"
 
 import { AsyncError } from "../../utils/catchAsyncError.js" 
@@ -100,7 +101,6 @@ const SignIn=AsyncError(async(req,res,next)=>{
         sameSite:'strict', 
         maxAge:24*60*60*1000,
     })
-  
     res.status(200).json({success:true,message:'User logged in',data:{id:user._id,name:user.name,email:user.email,phone:user.phone}})
 })
 
@@ -125,13 +125,13 @@ const forgotPassword=AsyncError(async(req,res,next)=>{
     const user =await findUserforgetPass({email:req.body.email,accountVerified:true})
     if(!user) return next(new Errorhandler('User not found.',404))
     
-    const {passtoken,tokenexpire} =forgetPassToken()
+    const {passtoken,tokenexpire,randomhex} =forgetPassToken()
     
     user.resetPasswordToken=passtoken 
     user.resetPasswordExpire=tokenexpire
     await user.save({validateBeforeSave:false}) // do not check everything.
 
-    const resetPasswordUrl=`${process.env.FRONTEND_URL}/reset/password/${passtoken}`
+    const resetPasswordUrl=`${process.env.FRONTEND_URL}/reset/password/${randomhex}`
     const message = `You requested to reset your password.
 
      Please click the link below to set a new password:
@@ -144,16 +144,31 @@ const forgotPassword=AsyncError(async(req,res,next)=>{
         user.resetPasswordToken=undefined
         user.resetPasswordExpire=undefined 
         await user.save({validateBeforeSave:false})
-        return next(new Errorhandler(error.message?error.message:'Email could not be Sent.',500))
+        return next(new Errorhandler(error.message?error.message:'Request could not be Sent.',500))
     }
 
     res.status(200).json({success:true,message:`Email send to ${user.email} successfully.`})
 })
 
+const resetPassword=AsyncError(async(req,res,next)=>{
+  
+ const {token}=req.params 
+ const resetToken= tokenReset(token) //get the token which is in the database
+ const user=await findUserByToken(resetToken)
+ if(!user) return next(new Errorhandler(error.message?error.message:'Reset Token is invalid or has been expired.'))
+  if(req.body.password!==req.body.confirmPassword){
+    return next (new Errorhandler(error.message?error.message:'Password & confirm Password do not match',400))
+  }
+ user.password=req.body.password 
+ user.resetPasswordExpire=undefined 
+ user.resetPasswordToken=undefined 
+ await user.save()
+ res.status(200).json({success:true,message:'Password Change Successfully'})
+})
 
 
 
 
-export {SignUp,verifyOTP,SignIn,LogOut,getUser,forgotPassword}
+export {SignUp,verifyOTP,SignIn,LogOut,getUser,forgotPassword,resetPassword}
 
 

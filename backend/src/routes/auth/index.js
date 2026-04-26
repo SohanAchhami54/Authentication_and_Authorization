@@ -8,6 +8,8 @@ router.post('/otpverification',verifyOTP)
 router.post('/signin',SignIn)
 router.post('/logout',isProtected,LogOut)
 router.get('/getuser',isProtected,getUser)
-router.post('/reset/password',forgotPassword)
+router.post('/reset/forgotpassword',forgotPassword)
+
+
 
 export default router

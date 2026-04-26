@@ -70,15 +70,22 @@ const deleteDuplicateUser=async(user,email,phone)=>{
 }
 
 const  forgetPassToken=()=>{
-
-  const randomhex=crypto.randomBytes(20).toString('hex')
-  const passtoken= crypto.createHash('sha256').update(randomhex).digest('hex')
+    const randomhex=crypto.randomBytes(20).toString('hex')
+    const passtoken= crypto.createHash('sha256').update(randomhex).digest('hex')
 
   const tokenexpire=new Date(Date.now()+5*60*1000)
-  return {passtoken,tokenexpire}
+  return {passtoken,tokenexpire,randomhex}
 }
 
+const tokenReset=(token)=>{
+  const passtoken=crypto.createHash('sha256').update(token).digest('hex')
+  return passtoken
+}
 
+const findUserByToken=async(resetToken)=>{
+  const user=await User.findOne({resetToken,resetPasswordToken:{$gt:Date.now()}})
+  return user 
+}
 
 const sendVerificationCode=async(verificationCode,verificationMethod,email,phone,name)=>{
 
@@ -133,6 +140,6 @@ function generateEmailTemplate(verificationCode,name){
 }
 
 
-export {validateNumber,getUserByEmailOrNumber,createUser,generateVerificationCode,sendVerificationCode,signupAttempt,deleteDuplicateUser,allUserEntries,forgetPassToken}
+export {validateNumber,getUserByEmailOrNumber,createUser,generateVerificationCode,sendVerificationCode,signupAttempt,deleteDuplicateUser,allUserEntries,forgetPassToken,tokenReset,findUserByToken}
 
 
