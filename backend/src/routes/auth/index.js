@@ -9,7 +9,7 @@ router.post('/signin',SignIn)
 router.post('/logout',isProtected,LogOut)
 router.get('/getuser',isProtected,getUser)
 router.post('/reset/forgotpassword',forgotPassword)
-router.post('/reset/resetpassword',resetPassword)
+router.put('/reset/resetpassword/:token',resetPassword)
 
 
 export default router
