@@ -83,7 +83,9 @@ const tokenReset=(token)=>{
 }
 
 const findUserByToken=async(resetToken)=>{
-  const user=await User.findOne({resetToken,resetPasswordToken:{$gt:Date.now()}})
+  const user=await User.findOne({
+    resetPasswordToken:resetToken,
+    resetPasswordExpire:{$gt:Date.now()}})
   return user 
 }
 

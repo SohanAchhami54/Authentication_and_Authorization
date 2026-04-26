@@ -1,7 +1,7 @@
 import { Errorhandler } from "../../middleware/error.middleware.js"
 import { User } from "../../models/user.models.js"
 import {allUserEntries, createUser, deleteDuplicateUser, findUserByToken, forgetPassToken, generateVerificationCode, getUserByEmailOrNumber, sendVerificationCode, signupAttempt, tokenReset, validateNumber } from "../../services/user/index.js"
-import { findUserforgetPass, generateJWTToken, sendEmail, verifyPassword } from "../../utils/auth.js"
+import { encryptedPassword, findUserforgetPass, generateJWTToken, sendEmail, verifyPassword } from "../../utils/auth.js"
 
 import { AsyncError } from "../../utils/catchAsyncError.js" 
 
@@ -150,16 +150,17 @@ const forgotPassword=AsyncError(async(req,res,next)=>{
     res.status(200).json({success:true,message:`Email send to ${user.email} successfully.`})
 })
 
-const resetPassword=AsyncError(async(req,res,next)=>{
+const resetPassword=AsyncError(async(req,res,next)=>{   
   
  const {token}=req.params 
  const resetToken= tokenReset(token) //get the token which is in the database
  const user=await findUserByToken(resetToken)
- if(!user) return next(new Errorhandler(error.message?error.message:'Reset Token is invalid or has been expired.'))
+ if(!user) return next(new Errorhandler('Reset Token is invalid or has been expired.'))
   if(req.body.password!==req.body.confirmPassword){
-    return next (new Errorhandler(error.message?error.message:'Password & confirm Password do not match',400))
+    return next (new Errorhandler('Password & confirm Password do not match',400))
   }
- user.password=req.body.password 
+ user.password= await encryptedPassword(req.body.password)
+  
  user.resetPasswordExpire=undefined 
  user.resetPasswordToken=undefined 
  await user.save()
