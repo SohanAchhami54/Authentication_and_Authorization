@@ -1,5 +1,5 @@
 import express from 'express' 
-import { forgotPassword, getUser, LogOut, SignIn, SignUp, verifyOTP } from '../../controllers/auth/index.js'
+import { forgotPassword, getUser, LogOut, resetPassword, SignIn, SignUp, verifyOTP } from '../../controllers/auth/index.js'
 import { isProtected } from '../../middleware/auth.js'
 const router=express.Router()
 
@@ -9,7 +9,7 @@ router.post('/signin',SignIn)
 router.post('/logout',isProtected,LogOut)
 router.get('/getuser',isProtected,getUser)
 router.post('/reset/forgotpassword',forgotPassword)
-
+router.post('/reset/resetpassword',resetPassword)
 
 
 export default router
