@@ -4,7 +4,7 @@ import {zodResolver} from '@hookform/resolvers/zod'
 import  * as z from 'zod'
 import { toast } from 'react-toastify'
 import Axios from '../api/axios'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { userLogin } from '../services/auth'
 import { useApp } from '../context/context'
 
@@ -17,14 +17,17 @@ const formSchema=z.object({
 const Login = () => {
   
     const {isAuthenticated,setIsAuthenticated,user,setUser}=useApp()
+    const navigate=useNavigate()
     const {register,handleSubmit,reset,formState:{errors,isSubmitting,isValid}}=useForm({
         resolver:zodResolver(formSchema), 
         mode:'onChange'
     })
 
     const onSubmit=async(formData)=>{
-        await userLogin(formData)
-        reset()
+      const res=  await userLogin(formData,setUser,setIsAuthenticated)
+        if(res) reset()
+        navigate('/')
+        
     }
   return (
     <>
@@ -68,7 +71,6 @@ const Login = () => {
         type="email"
         id="email"
         {...register("email")}
-        required
         placeholder="Enter your email"
         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
       />
@@ -86,7 +88,7 @@ const Login = () => {
         type="number"
         id="phone"
         {...register("phone")}
-        required
+   
         placeholder="Enter your phone"
         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
       />
@@ -107,7 +109,7 @@ const Login = () => {
         type="password"
         id="password"
         {...register("password")}
-        required
+        
         placeholder="Enter your password"
         className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
       />
