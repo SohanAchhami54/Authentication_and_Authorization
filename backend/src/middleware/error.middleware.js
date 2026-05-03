@@ -29,12 +29,12 @@
              
 
          //err.keyValue is an object showing which field is duplicate.
-         //err.keyValue = { email: "sohan@example.com" }
-         //Object.keys(err.keyValue) → Gets the field name that caused the duplicate.
-         // if(err.code===11000){         
-         //    const message=`Duplicate ${Object.keys(err.keyValue)} Entered`
-         //    err=new Errorhandler(message,400)
-         // }
+         // err.keyValue = { email: "sohan@example.com" }
+         Object.keys(err.keyValue)
+         if(err.code===11000){         
+            const message=`Duplicate ${Object.keys(err.keyValue)} Entered`
+            err=new Errorhandler(message,400)
+         }
 
          return res.status(err.statusCode).json({
             success:false,
