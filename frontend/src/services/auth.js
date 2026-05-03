@@ -1,7 +1,8 @@
 import { toast } from "react-toastify"
 import Axios from "../api/axios"
+import { replace } from "react-router-dom"
 
-const userLogin=async(formData,setUser,setIsAuthenticated)=>{
+const userLogin=async(formData,setUser,setIsAuthenticated,navigate)=>{
      try{
           const {data}= await Axios.post('/api/auth/signin',formData)
           if(data.success){
@@ -35,7 +36,7 @@ const handleOtp=async(payload,setUser,setIsAuthenticated,navigate)=>{
        if(data.success){
          toast.success(data.message) 
          setIsAuthenticated(true) 
-         navigate('/login')
+         navigate('/login',{replace:true})
 
        }
    }catch(error){
@@ -61,7 +62,7 @@ const manangeResetPass=async(password,confirmPassword,token,navigate)=>{
        const {data} = await Axios.put(`/api/auth/reset/resetpassword/${token}`,{password,confirmPassword})
        if(data.success){
          toast.success(data.message)
-         navigate('/')
+         navigate('/',{replace:true})
        }
    }catch(error){
       toast.error(error.response?.data?.message)
